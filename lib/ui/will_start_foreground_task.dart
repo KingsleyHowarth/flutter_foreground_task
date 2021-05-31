@@ -10,9 +10,6 @@ class WillStartForegroundTask extends StatefulWidget {
   /// Optional values for notification detail settings.
   final NotificationOptions notificationOptions;
 
-  /// Optional values for foreground task detail settings.
-  final ForegroundTaskOptions? foregroundTaskOptions;
-
   /// The title that will be displayed in the notification.
   final String notificationTitle;
 
@@ -26,23 +23,21 @@ class WillStartForegroundTask extends StatefulWidget {
   final Widget child;
 
   /// Constructs an instance of [WillStartForegroundTask].
-  const WillStartForegroundTask({
-    Key? key,
-    required this.onWillStart,
-    required this.notificationOptions,
-    this.foregroundTaskOptions,
-    required this.notificationTitle,
-    required this.notificationText,
-    this.taskCallback,
-    required this.child
-  })  : super(key: key);
+  const WillStartForegroundTask(
+      {Key? key,
+      required this.onWillStart,
+      required this.notificationOptions,
+      required this.notificationTitle,
+      required this.notificationText,
+      this.taskCallback,
+      required this.child})
+      : super(key: key);
 
   @override
   _WillStartForegroundTaskState createState() => _WillStartForegroundTaskState();
 }
 
-class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
-    with WidgetsBindingObserver {
+class _WillStartForegroundTaskState extends State<WillStartForegroundTask> with WidgetsBindingObserver {
   void _startForegroundService() {
     FlutterForegroundTask.instance.start(
         notificationTitle: widget.notificationTitle,
@@ -66,9 +61,7 @@ class _WillStartForegroundTaskState extends State<WillStartForegroundTask>
   @override
   void initState() {
     super.initState();
-    FlutterForegroundTask.instance.init(
-        notificationOptions: widget.notificationOptions,
-        foregroundTaskOptions: widget.foregroundTaskOptions);
+    FlutterForegroundTask.instance.init(notificationOptions: widget.notificationOptions);
     WidgetsBinding.instance?.addObserver(this);
   }
 

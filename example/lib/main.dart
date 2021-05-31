@@ -17,9 +17,6 @@ class _ExampleAppState extends State<ExampleApp> {
       channelImportance: NotificationChannelImportance.DEFAULT,
       priority: NotificationPriority.DEFAULT
     ),
-    foregroundTaskOptions: ForegroundTaskOptions(
-      interval: 5000
-    )
   );
 
   void startForegroundTask() {

@@ -5,11 +5,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
-import 'package:flutter_foreground_task/models/foreground_task_options.dart';
 import 'package:flutter_foreground_task/models/notification_options.dart';
 
 export 'package:flutter_foreground_task/exception/foreground_task_exception.dart';
-export 'package:flutter_foreground_task/models/foreground_task_options.dart';
 export 'package:flutter_foreground_task/models/notification_channel_importance.dart';
 export 'package:flutter_foreground_task/models/notification_options.dart';
 export 'package:flutter_foreground_task/models/notification_priority.dart';
@@ -38,28 +36,14 @@ class FlutterForegroundTask {
   /// Optional values for notification detail settings.
   NotificationOptions? _notificationOptions;
 
-  /// Optional values for foreground task detail settings.
-  ForegroundTaskOptions? _foregroundTaskOptions;
-
   /// Callback function to be called every interval of [ForegroundTaskOptions].
   TaskCallback? _taskCallback;
-
-  /// Timer that implements the interval of [ForegroundTaskOptions].
-  Timer? _taskTimer;
 
   /// Initialize the [FlutterForegroundTask].
   FlutterForegroundTask init({
     required NotificationOptions notificationOptions,
-    ForegroundTaskOptions? foregroundTaskOptions
   }) {
     _notificationOptions = notificationOptions;
-    if (_foregroundTaskOptions == null)
-      _foregroundTaskOptions = foregroundTaskOptions
-          ?? const ForegroundTaskOptions();
-    else
-      _foregroundTaskOptions = foregroundTaskOptions
-          ?? _foregroundTaskOptions;
-
     return this;
   }
 
@@ -84,8 +68,8 @@ class FlutterForegroundTask {
     _methodChannel.invokeMethod('startForegroundService', options);
 
     if (taskCallback != null) {
-      _stopTaskTimer();
-      _startTaskTimer(taskCallback);
+      _taskCallback = taskCallback;
+      _taskCallback!(DateTime.now());
     }
 
     _isRunningTask = true;
@@ -111,8 +95,8 @@ class FlutterForegroundTask {
     _methodChannel.invokeMethod('updateForegroundService', options);
 
     if (taskCallback != null) {
-      _stopTaskTimer();
-      _startTaskTimer(taskCallback);
+      _taskCallback = taskCallback;
+      _taskCallback!(DateTime.now());
     }
 
     if (!kReleaseMode)
@@ -128,24 +112,11 @@ class FlutterForegroundTask {
     if (!_isRunningTask) return;
 
     _methodChannel.invokeMethod('stopForegroundService');
-    _stopTaskTimer();
+    _taskCallback = null;
 
     _isRunningTask = false;
     if (!kReleaseMode)
       dev.log('FlutterForegroundTask stopped.');
-  }
-
-  void _startTaskTimer(TaskCallback taskCallback) {
-    _taskCallback = taskCallback;
-    _taskTimer = Timer.periodic(
-        Duration(milliseconds: _foregroundTaskOptions?.interval ?? 5000),
-        (_) => _taskCallback!(DateTime.now()));
-  }
-
-  void _stopTaskTimer() {
-    _taskTimer?.cancel();
-    _taskTimer = null;
-    _taskCallback = null;
   }
 
   /// Minimize without closing the app.
