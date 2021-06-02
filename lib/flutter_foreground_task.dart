@@ -17,6 +17,8 @@ export 'package:flutter_foreground_task/ui/with_foreground_task.dart';
 /// Called with a timestamp value as a task callback function.
 typedef TaskCallback = void Function(DateTime timestamp);
 
+typedef ProgressCallback = void Function(int progress);
+
 /// A class that implement foreground task and provide useful utilities.
 class FlutterForegroundTask {
   FlutterForegroundTask._internal();
@@ -39,6 +41,10 @@ class FlutterForegroundTask {
   /// Callback function to be called every interval of [ForegroundTaskOptions].
   TaskCallback? _taskCallback;
 
+  VoidCallback? _endTaskCallback;
+
+  ProgressCallback? _progressCallback;
+
   /// Initialize the [FlutterForegroundTask].
   FlutterForegroundTask init({
     required NotificationOptions notificationOptions,
@@ -47,11 +53,17 @@ class FlutterForegroundTask {
     return this;
   }
 
+  void publishProgress(int progress) {
+    _progressCallback!(progress);
+  }
+
   /// Start foreground task with notification.
   void start({
     required String notificationTitle,
     required String notificationText,
-    TaskCallback? taskCallback
+    TaskCallback? taskCallback,
+    VoidCallback? endTaskCallback,
+    ProgressCallback? progressCallback,
   }) {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
@@ -72,6 +84,14 @@ class FlutterForegroundTask {
       _taskCallback!(DateTime.now());
     }
 
+    if (endTaskCallback != null) {
+      _endTaskCallback = endTaskCallback;
+    }
+
+    if (progressCallback != null) {
+      _progressCallback = progressCallback;
+    }
+
     _isRunningTask = true;
     if (!kReleaseMode)
       dev.log('FlutterForegroundTask started.');
@@ -81,7 +101,9 @@ class FlutterForegroundTask {
   void update({
     required String notificationTitle,
     required String notificationText,
-    TaskCallback? taskCallback
+    TaskCallback? taskCallback,
+    VoidCallback? endTaskCallback,
+    ProgressCallback? progressCallback,
   }) {
     // This function only works on Android.
     if (!Platform.isAndroid) return;
@@ -99,6 +121,14 @@ class FlutterForegroundTask {
       _taskCallback!(DateTime.now());
     }
 
+    if (endTaskCallback != null) {
+      _endTaskCallback = endTaskCallback;
+    }
+
+    if (progressCallback != null) {
+      _progressCallback = progressCallback;
+    }
+
     if (!kReleaseMode)
       dev.log('FlutterForegroundTask updated.');
   }
@@ -111,8 +141,12 @@ class FlutterForegroundTask {
     // This function runs only when the task is started.
     if (!_isRunningTask) return;
 
+    _endTaskCallback!();
+
     _methodChannel.invokeMethod('stopForegroundService');
     _taskCallback = null;
+    _endTaskCallback = null;
+    _progressCallback = null;
 
     _isRunningTask = false;
     if (!kReleaseMode)
