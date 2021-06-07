@@ -54,7 +54,9 @@ class FlutterForegroundTask {
   }
 
   void publishProgress(int progress) {
-    _progressCallback!(progress);
+    if (_progressCallback != null) {
+      _progressCallback!(progress);
+    }
   }
 
   /// Start foreground task with notification.
@@ -141,7 +143,9 @@ class FlutterForegroundTask {
     // This function runs only when the task is started.
     if (!_isRunningTask) return;
 
-    _endTaskCallback!();
+    if (_endTaskCallback != null) {
+      _endTaskCallback!();
+    }
 
     _methodChannel.invokeMethod('stopForegroundService');
     _taskCallback = null;
