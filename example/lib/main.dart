@@ -52,7 +52,7 @@ class _ExampleAppState extends State<ExampleApp> {
   }
 
   Widget buildContentView() {
-    final buttonBuilder = (String text, {VoidCallback onPressed}) {
+    final buttonBuilder = (String text, {required VoidCallback onPressed}) {
       return ElevatedButton(
         child: Text(text),
         onPressed: onPressed

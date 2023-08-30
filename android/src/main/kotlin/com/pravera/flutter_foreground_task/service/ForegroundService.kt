@@ -106,6 +106,10 @@ open class ForegroundService: Service() {
 
 	private fun getPendingIntent(pm: PackageManager): PendingIntent {
 		val launchIntent = pm.getLaunchIntentForPackage(applicationContext.packageName)
-		return PendingIntent.getActivity(this, 0, launchIntent, 0)
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+		} else {
+			PendingIntent.getActivity(this, 0, launchIntent, 0)
+		}
 	}
 }
